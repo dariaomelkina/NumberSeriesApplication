@@ -1,37 +1,14 @@
 from stack import Stack
-
-
-def add(x, y):
-    return x + y
-
-
-def subtract(x, y):
-    return x - y
-
-
-def multiply(x, y):
-    return x * y
-
-
-def divide(x, y):
-    return x / y
-
-
-def floor_divide(x, y):
-    return x // y
-
-
-def modulus(x, y):
-    return x % y
-
-
-def exponent(x, y):
-    return x ** y
-
+from sympy import limit, symbols
+from funcs import add, subtract, multiply, divide, floor_divide, modulus, exponent
 
 operators = {'+': (1, add), '-': (1, subtract), '*': (2, multiply), '/': (2, divide),
              '//': (2, floor_divide), '%': (2, modulus), '**': (3, exponent)}
 operands = '1234567890n'
+
+
+def prepare_expression(expression):
+    pass
 
 
 def infix_to_postfix(infix):
@@ -93,15 +70,28 @@ def evaluate(infix, n):
     return stack.pop()
 
 
-def series():
+def series_partial_sum():
     line = input()
     n = int(input())
-    summ = 0
+    partial_sum = 0
     for i in range(1, n + 1):
-        summ += evaluate(line, i)
-    print(summ)
-    return summ
+        partial_sum += evaluate(line, i)
+    print(partial_sum)
+    return partial_sum
 
 
-if __name__ == '__main__':
-    series()
+def check_limit():
+    pass
+
+
+def convergence():
+    pass
+
+
+# if __name__ == '__main__':
+#     series_partial_sum()
+
+x = symbols('x')
+func = x
+func /= x * 2
+print(limit(func, x, float('inf')) == 0.5)
