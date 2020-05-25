@@ -9,10 +9,34 @@ operands = '1234567890n.'
 
 
 def find_alpha(lst):
+    """
+    Return alpha part
+    from the harmonic series.
+
+    :param lst: list with alpha.
+    :return: string alpha.
+    """
     if '(' in lst:
         return ''.join(lst[1:-1])
     else:
         return ''.join(lst)
+
+
+def partial(expression, to):
+    """
+    Return partial sum
+    using sympy library.
+
+    :param expression: series.
+    :param to: number of iterations.
+    :return: sum.
+    """
+    summ = 0
+    n = symbols('n')
+    expr = parse_expr(expression)
+    for i in range(1, to + 1):
+        summ += expr.subs(n, i)
+    return summ
 
 
 def prepare_expression(expression):
@@ -126,10 +150,18 @@ def series_partial_sum(series, n):
 
     :return: sum.
     """
-    partial_sum = 0
-    for i in range(1, n + 1):
-        partial_sum += evaluate(series, i)
-    return partial_sum
+    lst = prepare_expression(series).split()
+    check_lst = []
+    for i in lst:
+        if not (i in list(operators) or i in list(operands)):
+            check_lst.append(i)
+    if not check_lst:
+        partial_sum = 0
+        for i in range(1, n + 1):
+            partial_sum += evaluate(series, i)
+        return partial_sum
+    else:
+        return partial(series, n)
 
 
 def check_limit(expression, to, param=None):
@@ -139,10 +171,10 @@ def check_limit(expression, to, param=None):
     limits for Cauchy's and d'Alembert's
     rules respectively.
 
-    :param expression:
-    :param to:
-    :param param:
-    :return:
+    :param expression: series.
+    :param to: approached value.
+    :param param: Cauchy/d'Alembert
+    :return: limit.
     """
     n = symbols('n')
     prepared_expression = prepare_expression(expression)
@@ -150,68 +182,56 @@ def check_limit(expression, to, param=None):
         cauchy = parse_expr(prepared_expression) ** (1 / n)
         return limit(cauchy, n, to)
     elif param == 'd':
-        dalamber_plus_one =  prepared_expression.replace()
-        pass
+        dalember_plus_one = prepared_expression.replace('n', '( n + 1 )')
+        DAlembert = parse_expr(dalember_plus_one) / parse_expr(prepared_expression)
+        return limit(DAlembert, n, to)
     else:
         return limit(parse_expr(prepared_expression), n, to)
 
 
 def convergence(expression):
-    # check harmony rule
+    """
+    Return True if series
+    are convergence.
+    Returned string 'error'
+    indicates, that these tests
+    were not enough.
+
+    :param expression: series.
+    :return: bool/string.
+    """
+    # check harmonic series
     lst = prepare_expression(expression).split()
     if ['1', '/', 'n'] == lst:
         return False
-    if ['1', '/', 'n', '**'] == lst[:4]:
+    if ['1', '/', 'n', '**'] == lst[:4] and 'n' not in lst[4:]:
         alpha = find_alpha(lst[4:])
         if float(alpha) > 1:
             return True
         else:
             return False
 
-    # check needed condition
+    # check needed condition of limit
     if check_limit(expression, float('inf')) != 0:
         return False
 
-    # check Cauchy rule
-    print('c')
+    # check Cauchy test
     if check_limit(expression, float('inf'), 'c') < 1:
         return True
     elif check_limit(expression, float('inf'), 'c') > 1:
         return False
 
-    # check d'Alembert rule
-    print('d')
+    # check d'Alembert test
     if check_limit(expression, float('inf'), 'd') < 1:
         return True
     elif check_limit(expression, float('inf'), 'd') > 1:
         return False
 
-    # Cauchy = prepare_expression(expression, 'c')
-    # Cauchy = expression ** (1/x)
-    # if check_limit(Cauchy, float('inf')) < 1:
-    #     return True
-    # elif check_limit(Cauchy, float('inf')) > 1:
-    #     return False
-
-    # DAlembert = prepare_expression(expression, 'd')
-    # DAlembert = abs(expression(n + 1) / expression)
-    # if check_limit(Cauchy, float('inf')) < 1:
-    #     return True
-    # elif check_limit(Cauchy, float('inf')) > 1:
-    #     return False
-
     return 'error'
 
 
-# if __name__ == '__main__':
-#     series_partial_sum()
-
-# x = symbols('x')
-# func = 1 / (x ** 0.6)
-# print(func)
-# print(limit(func, x, float('inf')) == 0)
-#
-# a = 'sin(n) * 10'
-# print(parse_expr(a))
 print(convergence('1/n**5'))
 print(convergence('n**2 /n'))
+print(convergence('(n**2 + n -1)/4**n'))
+print(convergence('((7*n + 1)/(6*n + 5))**(3*n + 2)'))
+print(series_partial_sum('sin(n/10*pi)', 10))
