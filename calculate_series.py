@@ -1,5 +1,5 @@
 from stack import Stack
-from sympy import limit, symbols
+from sympy import *
 from funcs import add, subtract, multiply, divide, floor_divide, modulus, exponent
 
 operators = {'+': (1, add), '-': (1, subtract), '*': (2, multiply), '/': (2, divide),
@@ -7,11 +7,14 @@ operators = {'+': (1, add), '-': (1, subtract), '*': (2, multiply), '/': (2, div
 operands = '1234567890n'
 
 
-def prepare_expression(expression):
-    pass
-
-
 def infix_to_postfix(infix):
+    """
+    Convert infix expression to a
+    postfix expression.
+
+    :param infix: expression to convert.
+    :return: converted expression.
+    """
     postfix = ''
     stack = Stack()
     infix = infix.split()
@@ -50,6 +53,9 @@ def infix_to_postfix(infix):
 
 
 def evaluate(infix, n):
+    """
+
+    """
     postfix = infix_to_postfix(infix)
     stack = Stack()
     postfix = postfix.split()
@@ -71,6 +77,11 @@ def evaluate(infix, n):
 
 
 def series_partial_sum():
+    """
+    Returns partial sum of the series.
+
+    :return: sum.
+    """
     line = input()
     n = int(input())
     partial_sum = 0
@@ -80,18 +91,71 @@ def series_partial_sum():
     return partial_sum
 
 
-def check_limit():
-    pass
+def check_limit(expression, to, param=None):
+    """
+    Return limit of the expression.
+    With 'c' or 'd' parameters finds
+    limits for Cauchy's and d'Alembert's
+    rules respectively.
+
+    :param expression:
+    :param to:
+    :param param:
+    :return:
+    """
+    n = symbols('n')
+    prepared_expression =
+    if param == 'c':
+        pass
+    if param == 'd':
+        pass
+    return limit(prepared_expression, x, to)
 
 
-def convergence():
-    pass
+def convergence(expression):
+    # check needed condition
+    if check_limit(expression, float('inf')) != 0:
+        return False
+
+    # check harmony rule
+    if '1 / n ** ' in expression:
+        alpha = expression[8:]
+        if int(alpha) > 1:
+            return True
+
+    # check Cauchy rule
+    if check_limit(expression, float('inf'), 'c') < 1:
+        return True
+    elif check_limit(expression, float('inf'), 'c') > 1:
+        return False
+
+    # check d'Alembert rule
+    if check_limit(expression, float('inf'), 'd') < 1:
+        return True
+    elif check_limit(expression, float('inf'), 'd') > 1:
+        return False
+
+    # Cauchy = prepare_expression(expression, 'c')
+    # Cauchy = expression ** (1/x)
+    # if check_limit(Cauchy, float('inf')) < 1:
+    #     return True
+    # elif check_limit(Cauchy, float('inf')) > 1:
+    #     return False
+
+    # DAlembert = prepare_expression(expression, 'd')
+    # DAlembert = abs(expression(n + 1) / expression)
+    # if check_limit(Cauchy, float('inf')) < 1:
+    #     return True
+    # elif check_limit(Cauchy, float('inf')) > 1:
+    #     return False
+
+    return 'error'
 
 
 # if __name__ == '__main__':
 #     series_partial_sum()
 
 x = symbols('x')
-func = x
-func /= x * 2
+func = 1/x
+# func /= x * 2
 print(limit(func, x, float('inf')) == 0.5)
