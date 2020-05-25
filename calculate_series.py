@@ -1,10 +1,50 @@
 from stack import Stack
 from sympy import *
 from funcs import add, subtract, multiply, divide, floor_divide, modulus, exponent
+from sympy.parsing.sympy_parser import parse_expr
 
 operators = {'+': (1, add), '-': (1, subtract), '*': (2, multiply), '/': (2, divide),
              '//': (2, floor_divide), '%': (2, modulus), '**': (3, exponent)}
-operands = '1234567890n'
+operands = '1234567890n.'
+
+
+def find_alpha(lst):
+    if '(' in lst:
+        return ''.join(lst[1:-1])
+    else:
+        return ''.join(lst)
+
+
+def prepare_expression(expression):
+    """
+    Prepares expression for converting into prefix.
+    Adds needed spaces between operands and operators.
+
+    :param expression: expression, that needs to be changed.
+    :return: prepared expression.
+    """
+    lst = []
+    element = ''
+
+    for i in expression:
+        if i == '(' or i == ')':
+            lst.append(element)
+            element = ' '
+            lst.append(i)
+        elif i in operands and (element == '' or element[-1] in operands):
+            element += i
+        elif i in operands and element[-1] not in operands:
+            lst.append(element)
+            element = i
+        elif i in operators and element[-1] in operators:
+            element += i
+        elif i in operators and element[-1] not in operators:
+            lst.append(element)
+            element = i
+
+    if element:
+        lst.append(element)
+    return ' '.join(lst)
 
 
 def infix_to_postfix(infix):
@@ -54,7 +94,11 @@ def infix_to_postfix(infix):
 
 def evaluate(infix, n):
     """
+    Returns value of the expression.
 
+    :param infix: expression in the infix notation.
+    :param n: variable n.
+    :return: value of the expression.
     """
     postfix = infix_to_postfix(infix)
     stack = Stack()
@@ -76,18 +120,15 @@ def evaluate(infix, n):
     return stack.pop()
 
 
-def series_partial_sum():
+def series_partial_sum(series, n):
     """
     Returns partial sum of the series.
 
     :return: sum.
     """
-    line = input()
-    n = int(input())
     partial_sum = 0
     for i in range(1, n + 1):
-        partial_sum += evaluate(line, i)
-    print(partial_sum)
+        partial_sum += evaluate(series, i)
     return partial_sum
 
 
@@ -104,32 +145,42 @@ def check_limit(expression, to, param=None):
     :return:
     """
     n = symbols('n')
-    prepared_expression =
+    prepared_expression = prepare_expression(expression)
     if param == 'c':
+        cauchy = parse_expr(prepared_expression) ** (1 / n)
+        return limit(cauchy, n, to)
+    elif param == 'd':
+        dalamber_plus_one =  prepared_expression.replace()
         pass
-    if param == 'd':
-        pass
-    return limit(prepared_expression, x, to)
+    else:
+        return limit(parse_expr(prepared_expression), n, to)
 
 
 def convergence(expression):
+    # check harmony rule
+    lst = prepare_expression(expression).split()
+    if ['1', '/', 'n'] == lst:
+        return False
+    if ['1', '/', 'n', '**'] == lst[:4]:
+        alpha = find_alpha(lst[4:])
+        if float(alpha) > 1:
+            return True
+        else:
+            return False
+
     # check needed condition
     if check_limit(expression, float('inf')) != 0:
         return False
 
-    # check harmony rule
-    if '1 / n ** ' in expression:
-        alpha = expression[8:]
-        if int(alpha) > 1:
-            return True
-
     # check Cauchy rule
+    print('c')
     if check_limit(expression, float('inf'), 'c') < 1:
         return True
     elif check_limit(expression, float('inf'), 'c') > 1:
         return False
 
     # check d'Alembert rule
+    print('d')
     if check_limit(expression, float('inf'), 'd') < 1:
         return True
     elif check_limit(expression, float('inf'), 'd') > 1:
@@ -155,7 +206,12 @@ def convergence(expression):
 # if __name__ == '__main__':
 #     series_partial_sum()
 
-x = symbols('x')
-func = 1/x
-# func /= x * 2
-print(limit(func, x, float('inf')) == 0.5)
+# x = symbols('x')
+# func = 1 / (x ** 0.6)
+# print(func)
+# print(limit(func, x, float('inf')) == 0)
+#
+# a = 'sin(n) * 10'
+# print(parse_expr(a))
+print(convergence('1/n**5'))
+print(convergence('n**2 /n'))
