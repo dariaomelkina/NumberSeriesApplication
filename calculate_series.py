@@ -1,3 +1,6 @@
+"""
+Module with functions for handling input and working with convergence and partial sum.
+"""
 from stack import Stack
 from sympy import *
 from funcs import add, subtract, multiply, divide, floor_divide, modulus, exponent
@@ -16,7 +19,7 @@ def find_alpha(lst):
     :param lst: list with alpha.
     :return: string alpha.
     """
-    if '(' in lst:
+    if '(' in lst or ')' in lst:
         return ''.join(lst[1:-1])
     else:
         return ''.join(lst)
@@ -34,7 +37,7 @@ def partial(expression, to):
     summ = 0
     n = symbols('n')
     expr = parse_expr(expression)
-    for i in range(1, to + 1):
+    for i in range(1, int(to) + 1):
         summ += expr.subs(n, i)
     return summ
 
@@ -81,7 +84,7 @@ def infix_to_postfix(infix):
     """
     postfix = ''
     stack = Stack()
-    infix = infix.split()
+    infix = prepare_expression(infix).split()
     for i in infix:
         if i in operands:
             postfix += i + ' '
@@ -157,7 +160,7 @@ def series_partial_sum(series, n):
             check_lst.append(i)
     if not check_lst:
         partial_sum = 0
-        for i in range(1, n + 1):
+        for i in range(1, int(n) + 1):
             partial_sum += evaluate(series, i)
         return partial_sum
     else:
@@ -183,8 +186,8 @@ def check_limit(expression, to, param=None):
         return limit(cauchy, n, to)
     elif param == 'd':
         dalember_plus_one = prepared_expression.replace('n', '( n + 1 )')
-        DAlembert = parse_expr(dalember_plus_one) / parse_expr(prepared_expression)
-        return limit(DAlembert, n, to)
+        dalembert = parse_expr(dalember_plus_one) / parse_expr(prepared_expression)
+        return limit(dalembert, n, to)
     else:
         return limit(parse_expr(prepared_expression), n, to)
 
@@ -200,38 +203,34 @@ def convergence(expression):
     :param expression: series.
     :return: bool/string.
     """
-    # check harmonic series
-    lst = prepare_expression(expression).split()
-    if ['1', '/', 'n'] == lst:
-        return False
-    if ['1', '/', 'n', '**'] == lst[:4] and 'n' not in lst[4:]:
-        alpha = find_alpha(lst[4:])
-        if float(alpha) > 1:
-            return True
-        else:
+    try:
+        # check harmonic series
+        lst = prepare_expression(expression).split()
+        if ['1', '/', 'n'] == lst:
+            return False
+        if (['1', '/', 'n', '**'] == lst[:4] or
+            ['1', '/', '(', 'n', '**'] == lst[:5]) and 'n' not in lst[4:]:
+            alpha = find_alpha(lst[4:])
+            if float(alpha) > 1:
+                return True
+            else:
+                return False
+
+        # check needed condition of limit
+        if check_limit(expression, float('inf')) != 0:
             return False
 
-    # check needed condition of limit
-    if check_limit(expression, float('inf')) != 0:
-        return False
+        # check Cauchy test
+        if check_limit(expression, float('inf'), 'c') < 1:
+            return True
+        elif check_limit(expression, float('inf'), 'c') > 1:
+            return False
 
-    # check Cauchy test
-    if check_limit(expression, float('inf'), 'c') < 1:
-        return True
-    elif check_limit(expression, float('inf'), 'c') > 1:
-        return False
-
-    # check d'Alembert test
-    if check_limit(expression, float('inf'), 'd') < 1:
-        return True
-    elif check_limit(expression, float('inf'), 'd') > 1:
-        return False
-
-    return 'error'
-
-
-print(convergence('1/n**5'))
-print(convergence('n**2 /n'))
-print(convergence('(n**2 + n -1)/4**n'))
-print(convergence('((7*n + 1)/(6*n + 5))**(3*n + 2)'))
-print(series_partial_sum('sin(n/10*pi)', 10))
+        # check d'Alembert test
+        if check_limit(expression, float('inf'), 'd') < 1:
+            return True
+        elif check_limit(expression, float('inf'), 'd') > 1:
+            return False
+        return 'error1'
+    except SyntaxError:
+        return 'error2'
